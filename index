@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apprendre la religion</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#e3f3ff; --ink:#2a2f45; --card:#ffffff; --line:#4a90d9;
+  --c1:#ffb74d; --c2:#4fc3f7; --c3:#81c784; --c4:#f48fb1; --c5:#ba9bf0; --c6:#ff8a65;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root:not([data-theme="light"]){color-scheme:light}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Fredoka","Trebuchet MS","Comic Sans MS",sans-serif;font-size:18px;line-height:1.5}
+main{max-width:760px;margin:0 auto;padding:16px 12px 48px}
+h1{font-size:1.9rem;text-align:center;margin:8px 0 4px;line-height:1.15}
+.sub{text-align:center;margin:0 0 12px;font-size:1.05rem}
+h2{font-size:1.5rem;text-align:center;margin:36px 0 12px}
+
+.map{position:relative;width:100%;height:560px;margin:0 auto}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.map line{stroke:var(--line);stroke-width:4;stroke-dasharray:2 9;stroke-linecap:round}
+.node{position:absolute;transform:translate(-50%,-50%);width:31%;min-height:84px;border:4px solid var(--ink);border-radius:26px;
+  background:var(--col);color:var(--ink);font:inherit;font-weight:600;font-size:.95rem;line-height:1.15;padding:8px 6px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 5px 0 var(--ink);transition:transform .15s,box-shadow .15s}
+.node .e{font-size:1.9rem;line-height:1}
+.node:active{transform:translate(-50%,-47%);box-shadow:0 2px 0 var(--ink)}
+.node[aria-expanded="true"]{outline:5px solid #fff;box-shadow:0 5px 0 var(--ink),0 0 0 9px var(--col)}
+.node:focus-visible{outline:5px solid #1a73e8}
+.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30%;aspect-ratio:1;border-radius:50%;
+  background:#ffd54f;border:5px solid var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  font-weight:700;line-height:1.05;box-shadow:0 6px 0 var(--ink)}
+.center .e{font-size:2.2rem}
+.center span:last-child{font-size:1rem}
+
+.detail{margin-top:8px;background:var(--card);border:4px solid var(--ink);border-radius:26px;padding:0 18px;max-height:0;overflow:hidden;opacity:0;
+  transition:max-height .45s ease,opacity .3s,padding .3s}
+.detail.open{max-height:520px;opacity:1;padding:16px 18px}
+.detail h3{margin:0 0 6px;font-size:1.35rem}
+.detail ul{margin:6px 0 0;padding-left:22px}
+.detail li{margin:4px 0}
+.morale{margin:28px 0 0;background:#fff3c4;border:4px solid var(--ink);border-radius:26px;padding:14px 18px;text-align:center;font-weight:600}
+
+.quiz{background:var(--card);border:4px solid var(--ink);border-radius:26px;padding:18px}
+.q{font-size:1.25rem;font-weight:600;margin:0 0 12px;text-align:center}
+.prog{text-align:center;font-size:1rem;margin-bottom:6px}
+.answers{display:grid;gap:10px}
+.ans{font:inherit;font-size:1.1rem;font-weight:500;min-height:58px;border:4px solid var(--ink);border-radius:20px;background:#fff3c4;color:var(--ink);padding:10px 14px;cursor:pointer;box-shadow:0 4px 0 var(--ink);text-align:center}
+.ans:focus-visible{outline:5px solid #1a73e8}
+.ans.ok{background:#a5e6a0}
+.ans.no{background:#ffb4a8}
+.ans:disabled{cursor:default}
+.fb{min-height:2.4em;text-align:center;font-weight:600;font-size:1.15rem;margin:12px 0 4px}
+.next,.again{display:block;margin:6px auto 0;font:inherit;font-size:1.15rem;font-weight:600;border:4px solid var(--ink);border-radius:999px;background:var(--c2);color:var(--ink);padding:10px 28px;cursor:pointer;box-shadow:0 4px 0 var(--ink)}
+.next:focus-visible,.again:focus-visible{outline:5px solid #1a73e8}
+.result{text-align:center}
+.stars{font-size:2.6rem;letter-spacing:4px}
+@media (min-width:640px){.map{height:640px}.node{font-size:1.1rem;width:28%}.center{width:26%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>📚 Apprendre la religion</h1>
+  <p class="sub">Touche une bulle pour découvrir !</p>
+
+  <div class="map" id="map">
+    <svg id="lines" aria-hidden="true"></svg>
+    <div class="center"><span class="e">🕌</span><span>Apprendre la religion</span></div>
+  </div>
+  <section class="detail" id="detail" aria-live="polite"></section>
+
+  <p class="morale">💡 Apprendre la religion nous aide à savoir ce qui est bien et ce qui est mal, pour faire de bonnes actions.</p>
+
+  <h2>🎯 Le petit quiz</h2>
+  <section class="quiz" id="quiz"></section>
+</main>
+
+<script>
+var branches = [
+  {e:"🕌", t:"C’est quoi la religion ?", col:"var(--c1)", x:20, y:12,
+   h:"La religion, c’est ce en quoi nous croyons.",
+   l:["Notre religion est l’Islam.","Nous sommes musulmans.","Nous croyons en Allah ﷻ, notre Créateur."]},
+  {e:"📖", t:"Le Coran et le Prophète ﷺ", col:"var(--c2)", x:80, y:12,
+   h:"Allah ﷻ nous a donné un message : le Coran.",
+   l:["Le Prophète Muhammad ﷺ nous a transmis ce message.","On suit les règles d’Allah ﷻ.","On fait ce qu’Il autorise et on ne fait pas ce qu’Il interdit."]},
+  {e:"🧑‍🏫", t:"Comment apprendre ?", col:"var(--c3)", x:15, y:50,
+   h:"On apprend grâce à plein de choses !",
+   l:["📖 le Coran et les livres","🧑‍🏫 les professeurs, à l’école Noor","👨‍👩‍👧 nos parents","❓ en posant plein de questions"]},
+  {e:"⚖️", t:"Le bien et le mal", col:"var(--c4)", x:85, y:50,
+   h:"Savoir, c’est pouvoir choisir le bien !",
+   l:["Allah ﷻ n’interdit rien sans raison.","Par exemple, le mensonge fait du mal à nous et aux autres.","On s’éloigne des mauvaises choses et on fait de bonnes actions.","Allah ﷻ nous ouvrira les portes du Paradis, insha’Allah !"]},
+  {e:"🔤", t:"Pourquoi l’arabe ?", col:"var(--c5)", x:20, y:88,
+   h:"Le Coran est un livre en langue arabe.",
+   l:["Allah ﷻ a choisi l’arabe, ce n’est pas pour rien.","L’arabe fait partie de notre religion.","On l’apprend pour comprendre le plus possible."]},
+  {e:"🌟", t:"Allah ﷻ est fier de toi", col:"var(--c6)", x:80, y:88,
+   h:"Quand on apprend, Allah ﷻ est très fier de nous.",
+   l:["On apprend avec papa et maman.","Plus tard, on saura lire le Coran.","On le comprendra en arabe pour mieux adorer Allah ﷻ."]}
+];
+
+var map = document.getElementById("map"), lines = document.getElementById("lines"), detail = document.getElementById("detail");
+var NS = "http://www.w3.org/2000/svg", current = -1;
+
+branches.forEach(function(b,i){
+  var ln = document.createElementNS(NS,"line");
+  ln.setAttribute("x1","50%"); ln.setAttribute("y1","50%");
+  ln.setAttribute("x2",b.x+"%"); ln.setAttribute("y2",b.y+"%");
+  lines.appendChild(ln);
+  var n = document.createElement("button");
+  n.className = "node"; n.type = "button";
+  n.style.setProperty("--col", b.col);
+  n.style.left = b.x+"%"; n.style.top = b.y+"%";
+  n.setAttribute("aria-expanded","false");
+  var em = document.createElement("span"); em.className = "e"; em.textContent = b.e;
+  var tx = document.createElement("span"); tx.textContent = b.t;
+  n.appendChild(em); n.appendChild(tx);
+  n.addEventListener("click", function(){ show(i, n); });
+  map.appendChild(n);
+});
+
+function show(i, btn){
+  var nodes = map.querySelectorAll(".node");
+  if(current === i){ detail.classList.remove("open"); btn.setAttribute("aria-expanded","false"); current = -1; return; }
+  nodes.forEach(function(x){ x.setAttribute("aria-expanded","false"); });
+  btn.setAttribute("aria-expanded","true");
+  var b = branches[i];
+  detail.textContent = "";
+  var h = document.createElement("h3"); h.textContent = b.e + " " + b.t;
+  var p = document.createElement("p"); p.style.margin = "0"; p.style.fontWeight = "600"; p.textContent = b.h;
+  var ul = document.createElement("ul");
+  b.l.forEach(function(s){ var li = document.createElement("li"); li.textContent = s; ul.appendChild(li); });
+  detail.appendChild(h); detail.appendChild(p); detail.appendChild(ul);
+  detail.classList.add("open");
+  current = i;
+  setTimeout(function(){ detail.scrollIntoView({behavior:"smooth", block:"nearest"}); }, 120);
+}
+
+var Q = [
+  {q:"Quelle est notre religion ?", a:["L’Islam","Le football","La cuisine"], r:0},
+  {q:"Comment s’appelle le livre qu’Allah ﷻ nous a donné ?", a:["Un livre d’histoires","Un cahier","Le Coran"], r:2},
+  {q:"En quelle langue est le Coran ?", a:["En français","En arabe","En chinois"], r:1},
+  {q:"Apprendre la religion nous aide à savoir…", a:["Ce qui est bien et ce qui est mal","Quelle heure il est","Ce qu’on mange ce soir"], r:0},
+  {q:"Qui peut nous apprendre la religion ?", a:["Personne","Seulement la télé","Les professeurs et les parents"], r:2},
+  {q:"Quand on apprend notre religion, Allah ﷻ est…", a:["Fâché","Fier de nous","Endormi"], r:1}
+];
+var quiz = document.getElementById("quiz"), qi = 0, score = 0;
+
+function el(tag, cls, txt){ var e = document.createElement(tag); if(cls) e.className = cls; if(txt) e.textContent = txt; return e; }
+
+function render(){
+  quiz.textContent = "";
+  if(qi >= Q.length){
+    var box = el("div","result");
+    var n = score >= 5 ? 3 : score >= 3 ? 2 : 1;
+    box.appendChild(el("div","stars","⭐".repeat(n)));
+    box.appendChild(el("p","q", score === Q.length ? "Bravo champion ! Tout juste ! 🎉" : "Bravo ! " + score + " sur " + Q.length + " ! 👏"));
+    var again = el("button","again","Rejouer"); again.type = "button";
+    again.addEventListener("click", function(){ qi = 0; score = 0; render(); });
+    box.appendChild(again);
+    quiz.appendChild(box);
+    return;
+  }
+  var d = Q[qi];
+  quiz.appendChild(el("div","prog","Question " + (qi+1) + " sur " + Q.length));
+  quiz.appendChild(el("p","q",d.q));
+  var wrap = el("div","answers"), fb = el("div","fb"), done = false;
+  fb.setAttribute("aria-live","polite");
+  d.a.forEach(function(t,k){
+    var b = el("button","ans",t); b.type = "button";
+    b.addEventListener("click", function(){
+      if(done) return; done = true;
+      wrap.querySelectorAll("button").forEach(function(x){ x.disabled = true; });
+      if(k === d.r){ b.classList.add("ok"); fb.textContent = "Bravo ! 🎉"; score++; }
+      else { b.classList.add("no"); wrap.children[d.r].classList.add("ok"); fb.textContent = "Presque ! Regarde la bonne réponse 💪"; }
+      var nx = el("button","next", qi === Q.length-1 ? "Voir mon résultat" : "Suivant"); nx.type = "button";
+      nx.addEventListener("click", function(){ qi++; render(); });
+      quiz.appendChild(nx);
+    });
+    wrap.appendChild(b);
+  });
+  quiz.appendChild(wrap); quiz.appendChild(fb);
+}
+render();
+</script>
+</body>
+</html>
